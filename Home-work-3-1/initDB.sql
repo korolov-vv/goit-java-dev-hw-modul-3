@@ -2,10 +2,18 @@
 -- Please log an issue at https://redmine.postgresql.org/projects/pgadmin4/issues/new if you find any bugs, including reproduction steps.
 BEGIN;
 
+CREATE DATABASE data_base_for_hw3
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'Polish_Poland.1250'
+    LC_CTYPE = 'Polish_Poland.1250'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
 
-CREATE TABLE public.companies
+CREATE TABLE companies
 (
-    company_id integer NOT NULL,
+    company_id SERIAL,
     company_name character varying(255),
     number_of_developers integer,
     customer_id integer,
@@ -13,17 +21,17 @@ CREATE TABLE public.companies
     PRIMARY KEY (company_id)
 );
 
-CREATE TABLE public.customers
+CREATE TABLE customers
 (
-    customer_id integer NOT NULL,
+    customer_id SERIAL,
     customer_name character varying(255),
     project_id integer,
     PRIMARY KEY (customer_id)
 );
 
-CREATE TABLE public.developers
+CREATE TABLE developers
 (
-    developer_id integer NOT NULL,
+    developer_id SERIAL,
     first_name character varying(20),
     last_name character varying(25) NOT NULL,
     gender character varying(25) NOT NULL,
@@ -34,9 +42,9 @@ CREATE TABLE public.developers
     PRIMARY KEY (developer_id)
 );
 
-CREATE TABLE public.projects
+CREATE TABLE projects
 (
-    project_id integer NOT NULL,
+    project_id SERIAL,
     developer_id integer,
     company_id integer,
     customer_id integer,
@@ -47,71 +55,68 @@ CREATE TABLE public.projects
     PRIMARY KEY (project_id)
 );
 
-CREATE TABLE public.skills
+CREATE TYPE stack AS ENUM('Java', 'C++', 'C#', 'JS');
+CREATE TYPE level AS ENUM('Junior', 'Middle', 'Senior');
+
+CREATE TABLE skills
 (
-	skill_id integer not null,
 	developer_id integer NOT NULL,
-    stack character varying(255) NOT NULL,
-    seniority character varying(50) NOT NULL,
-    PRIMARY KEY (skill_id)
+    stack stack,
+    level level,
+	FOREIGN KEY (developer_id) REFERENCES developers(developer_id)
 );
 
-ALTER TABLE public.companies
+ALTER TABLE companies
     ADD FOREIGN KEY (customer_id)
-    REFERENCES public.customers (customer_id)
+    REFERENCES customers (customer_id)
     NOT VALID;
 
 
-ALTER TABLE public.companies
+ALTER TABLE companies
     ADD FOREIGN KEY (project_id)
-    REFERENCES public.projects (project_id)
+    REFERENCES projects (project_id)
     NOT VALID;
 
 
-ALTER TABLE public.customers
+ALTER TABLE customers
     ADD FOREIGN KEY (project_id)
-    REFERENCES public.projects (project_id)
+    REFERENCES projects (project_id)
     NOT VALID;
 
 
-ALTER TABLE public.developers
+ALTER TABLE developers
     ADD FOREIGN KEY (company_id)
-    REFERENCES public.companies (company_id)
+    REFERENCES companies (company_id)
     NOT VALID;
 
 
-ALTER TABLE public.developers
+ALTER TABLE developers
     ADD FOREIGN KEY (project_id)
-    REFERENCES public.projects (project_id)
+    REFERENCES projects (project_id)
     NOT VALID;
 
 
-ALTER TABLE public.projects
+ALTER TABLE projects
     ADD FOREIGN KEY (company_id)
-    REFERENCES public.companies (company_id)
+    REFERENCES companies (company_id)
     NOT VALID;
 
 
-ALTER TABLE public.projects
+ALTER TABLE projects
     ADD FOREIGN KEY (developer_id)
-    REFERENCES public.developers (developer_id)
-    NOT VALID;
-
-ALTER TABLE public.projects
-    ADD FOREIGN KEY (developer_id)
-    REFERENCES public.skills (developer_id)
+    REFERENCES developers (developer_id)
     NOT VALID;
 
 
-ALTER TABLE public.projects
+ALTER TABLE projects
     ADD FOREIGN KEY (developer_id)
-    REFERENCES public.developers (developer_id)
+    REFERENCES developers (developer_id)
     NOT VALID;
 
 
-ALTER TABLE public.skills
+ALTER TABLE skills
     ADD FOREIGN KEY (developer_id)
-    REFERENCES public.developers (developer_id)
+    REFERENCES developers (developer_id)
     NOT VALID;
 	
 CREATE TABLE customers_and_companies
@@ -133,16 +138,5 @@ CREATE TABLE developers_on_projects
    FOREIGN KEY (developer_id) REFERENCES developers(developer_id),
    UNIQUE (project_id, developer_id)
 );
-
-CREATE TABLE skills_of_developers
-(
-   skill_id int NOT NULL,
-   developer_id int NOT NULL,
-   FOREIGN KEY (skill_id) REFERENCES skills (skill_id),
-   FOREIGN KEY (developer_id) REFERENCES developers(developer_id),
-   UNIQUE (skill_id, developer_id)
-);
-
-
 
 END;
